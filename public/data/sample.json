@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "mot_de": "Haus",
+    "mot_ar": "بيت",
+    "type": "noun",
+    "definition": "Gebäude zum Wohnen",
+    "exemple_de": "Das Haus ist groß.",
+    "exemple_ar": "البيت كبير.",
+    "synonyms": ["Wohnung", "Gebäude"],
+    "is_personality": false,
+    "bio": ""
+  },
+  {
+    "id": 2,
+    "mot_de": "Goethe",
+    "mot_ar": "غوته",
+    "type": "person",
+    "definition": "Johann Wolfgang von Goethe, Dichter",
+    "exemple_de": "Goethe war ein deutscher Dichter.",
+    "exemple_ar": "غوته كان شاعراً ألمانياً.",
+    "synonyms": [],
+    "is_personality": true,
+    "bio": "Johann Wolfgang von Goethe (1749–1832) war ein deutscher Dichter, Naturforscher und Staatsmann. Berühmt für 'Faust'."
+  }
+]
