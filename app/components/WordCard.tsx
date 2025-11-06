@@ -1,5 +1,5 @@
 'use client';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 
 type Word = {
   id: number;
@@ -14,26 +14,29 @@ type Word = {
   bio?: string;
 };
 
-export default function WordCard({ item, onLong }: { item: Word, onLong: (item: Word) => void }) {
+export default function WordCard({ item }: { item: Word }) {
   const timerRef = useRef<number | null>(null);
+  const [expanded, setExpanded] = useState(false);
 
   function handlePointerDown() {
-    timerRef.current = window.setTimeout(() => onLong(item), 700);
+    timerRef.current = window.setTimeout(() => setExpanded(true), 700);
   }
+
   function handlePointerUp() {
     if (timerRef.current) {
       clearTimeout(timerRef.current);
       timerRef.current = null;
     }
   }
+
   function handleContextMenu(e: React.MouseEvent) {
     e.preventDefault();
-    onLong(item);
+    setExpanded(!expanded);
   }
 
   return (
     <div
-      className="border rounded p-3 mb-2 hover:shadow-sm"
+      className="border rounded p-3 mb-2 hover:shadow-md transition-shadow"
       onPointerDown={handlePointerDown}
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerUp}
@@ -45,9 +48,26 @@ export default function WordCard({ item, onLong }: { item: Word, onLong: (item: 
           <div className="text-sm italic text-gray-600">{item.type}</div>
         </div>
       </div>
+
       <div className="mt-2 text-sm">
         <strong>Déf.:</strong> {item.definition}
       </div>
+
+      {expanded && (
+        <div className="mt-2 p-2 bg-gray-100 rounded">
+          {item.is_personality ? (
+            <>
+              <div className="font-semibold">Biographie :</div>
+              <div className="text-sm">{item.bio || '(aucune)'}</div>
+            </>
+          ) : (
+            <>
+              <div className="font-semibold">Synonymes :</div>
+              <div className="text-sm">{(item.synonyms || []).join(', ') || '(aucun)'}</div>
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 }
