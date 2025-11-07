@@ -1,28 +1,45 @@
-import { NextRequest, NextResponse } from 'next/server';
-import path from 'path';
-import fs from 'fs';
+import { NextRequest, NextResponse } from "next/server";
+import { open } from "sqlite";
+import sqlite3 from "sqlite3";
+import path from "path";
+
+// Fonction pour ouvrir la base SQLite
+async function openDb() {
+  return open({
+    filename: path.join(process.cwd(), "backend", "dico.sqlite"), // chemin vers ta base
+    driver: sqlite3.Database,
+  });
+}
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const q = (searchParams.get('q') || '').toLowerCase().trim();
-  const limit = Number(searchParams.get('limit') || 50);
-
-  // Read sample JSON (works in dev & on Vercel since it's in /public)
-  const jsonPath = path.join(process.cwd(), 'public', 'data', 'sample.json');
-  const dataRaw = fs.readFileSync(jsonPath, { encoding: 'utf8' });
-  const data = JSON.parse(dataRaw);
+  const q = (searchParams.get("q") || "").toLowerCase().trim();
+  const limit = Number(searchParams.get("limit") || 50);
 
   if (!q) {
     return NextResponse.json({ results: [] });
   }
 
-  // Simple search: prefix or substring match on mot_de or mot_ar
-  const results = data.filter((item: any) =>
-    item.mot_de.toLowerCase().startsWith(q) ||
-    item.mot_ar.toLowerCase().startsWith(q) ||
-    item.mot_de.toLowerCase().includes(q) ||
-    item.mot_ar.toLowerCase().includes(q)
-  ).slice(0, limit);
+  const db = await openDb();
 
-  return NextResponse.json({ results });
+  // Recherche dans SQLite : mots qui commencent par q
+  const results = await db.all(
+    `
+    SELECT * FROM mots 
+    WHERE LOWER(mot_de) LIKE ? OR LOWER(mot_ar) LIKE ?
+    LIMIT ?
+  `,
+    [`${q}%`, `${q}%`, limit]
+  );
+
+  await db.close();
+
+  // Parse les synonymes (stockés en JSON) et convertir is_personality en boolean
+  const parsedResults = results.map((item) => ({
+    ...item,
+    synonyms: JSON.parse(item.synonyms || "[]"),
+    is_personality: !!item.is_personality,
+  }));
+
+  return NextResponse.json({ results: parsedResults });
 }

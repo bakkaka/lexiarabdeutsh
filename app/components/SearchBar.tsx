@@ -1,14 +1,23 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { debounce } from 'lodash';
 
 export default function SearchBar({ onSearch }: { onSearch: (q: string) => void }) {
   const [q, setQ] = useState('');
-  function submit(e?: any) {
-    e?.preventDefault();
-    onSearch(q.trim());
-  }
+
+  const debouncedSearch = debounce((value: string) => {
+    onSearch(value.trim());
+  }, 300);
+
+  useEffect(() => {
+    debouncedSearch(q);
+    return () => {
+      debouncedSearch.cancel();
+    };
+  }, [q]);
+
   return (
-    <form onSubmit={submit} className="flex gap-2">
+    <div className="flex gap-2">
       <input
         type="search"
         value={q}
@@ -16,7 +25,6 @@ export default function SearchBar({ onSearch }: { onSearch: (q: string) => void 
         placeholder="Rechercher (Deutsch ou عربي)..."
         className="border rounded px-3 py-2 flex-1"
       />
-      <button type="submit" className="bg-blue-600 text-white px-4 rounded">Chercher</button>
-    </form>
+    </div>
   );
 }
